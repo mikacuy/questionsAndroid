@@ -2,8 +2,14 @@ package hk.ust.cse.hunkim.questionroom;
 
 import android.app.ListActivity;
 import android.content.Intent;
+import android.database.Cursor;
 import android.database.DataSetObserver;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -20,12 +26,11 @@ import com.firebase.client.ValueEventListener;
 
 import hk.ust.cse.hunkim.questionroom.db.DBHelper;
 import hk.ust.cse.hunkim.questionroom.db.DBUtil;
-import hk.ust.cse.hunkim.questionroom.question.Question;
 
 public class MainActivity extends ListActivity {
 
     // TODO: change this to your own Firebase URL
-    private static final String FIREBASE_URL = "https://classquestion.firebaseio.com/";
+    private static final String FIREBASE_URL = "https://radiant-fire-2727.firebaseio.com/";
 
     private String roomName;
     private Firebase mFirebaseRef;
@@ -130,8 +135,10 @@ public class MainActivity extends ListActivity {
         mFirebaseRef.getRoot().child(".info/connected").removeEventListener(mConnectedListener);
         mChatListAdapter.cleanup();
     }
-
+    private static int RESULT_LOAD_IMG = 1;
+    String fileName;
     private void sendMessage() {
+        /*
         EditText inputText = (EditText) findViewById(R.id.messageInput);
         String input = inputText.getText().toString();
         if (!input.equals("")) {
@@ -140,6 +147,35 @@ public class MainActivity extends ListActivity {
             // Create a new, auto-generated child of that chat location, and save our chat data there
             mFirebaseRef.push().setValue(question);
             inputText.setText("");
+        }
+        */
+
+        // Create intent to Open Image applications like Gallery, Google Photos
+        Intent galleryIntent = new Intent(Intent.ACTION_PICK,
+                android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        // Start the Intent
+
+        startActivityForResult(galleryIntent, RESULT_LOAD_IMG);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == RESULT_LOAD_IMG && resultCode == RESULT_OK && data != null) {
+            Uri selectedImage = data.getData();
+            String[] filePathColumn = { MediaStore.Images.Media.DATA };
+            Cursor cursor = getContentResolver().query(selectedImage, filePathColumn, null, null, null);
+            cursor.moveToFirst();
+            int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+            String picturePath = cursor.getString(columnIndex);
+            cursor.close();
+
+            String fileNameSegments[] = picturePath.split("/");
+            fileName = fileNameSegments[fileNameSegments.length - 1];
+
+            Bitmap myImg = BitmapFactory.decodeFile(picturePath);
+
+            new UploadImageTask().execute(picturePath, fileName);
         }
     }
 

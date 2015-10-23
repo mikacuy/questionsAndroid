@@ -4,10 +4,7 @@ import android.app.ListActivity;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.DataSetObserver;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
@@ -26,6 +23,7 @@ import com.firebase.client.ValueEventListener;
 
 import hk.ust.cse.hunkim.questionroom.db.DBHelper;
 import hk.ust.cse.hunkim.questionroom.db.DBUtil;
+import hk.ust.cse.hunkim.questionroom.question.Question;
 
 public class MainActivity extends ListActivity {
 
@@ -85,6 +83,13 @@ public class MainActivity extends ListActivity {
             }
         });
 
+        findViewById(R.id.uploadImage).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                uploadImage();
+            }
+        });
+
         // get the DB Helper
         DBHelper mDbHelper = new DBHelper(this);
         dbutil = new DBUtil(mDbHelper);
@@ -135,10 +140,11 @@ public class MainActivity extends ListActivity {
         mFirebaseRef.getRoot().child(".info/connected").removeEventListener(mConnectedListener);
         mChatListAdapter.cleanup();
     }
-    private static int RESULT_LOAD_IMG = 1;
-    String fileName;
+
     private void sendMessage() {
-        /*
+        // TODO: Wait for backend integration...
+        //new UploadImageTask().execute(picturePath, fileName);
+
         EditText inputText = (EditText) findViewById(R.id.messageInput);
         String input = inputText.getText().toString();
         if (!input.equals("")) {
@@ -148,8 +154,12 @@ public class MainActivity extends ListActivity {
             mFirebaseRef.push().setValue(question);
             inputText.setText("");
         }
-        */
+    }
 
+    private static int RESULT_LOAD_IMG = 1;
+    private String fileName;
+    private String picturePath;
+    private void uploadImage() {
         // Create intent to Open Image applications like Gallery, Google Photos
         Intent galleryIntent = new Intent(Intent.ACTION_PICK,
                 android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
@@ -167,14 +177,13 @@ public class MainActivity extends ListActivity {
             Cursor cursor = getContentResolver().query(selectedImage, filePathColumn, null, null, null);
             cursor.moveToFirst();
             int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-            String picturePath = cursor.getString(columnIndex);
+            picturePath = cursor.getString(columnIndex);
             cursor.close();
 
             String fileNameSegments[] = picturePath.split("/");
             fileName = fileNameSegments[fileNameSegments.length - 1];
 
-            Bitmap myImg = BitmapFactory.decodeFile(picturePath);
-
+            // TODO: Remove after backend integration...
             new UploadImageTask().execute(picturePath, fileName);
         }
     }

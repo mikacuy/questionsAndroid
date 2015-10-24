@@ -23,7 +23,8 @@ public class UploadImageTask extends AsyncTask<String, Void, String> {
     private String imagePath, fileName, responseURL;
     private Bitmap b;
     private final static int IMAGE_MAX_HEIGHT = 1200;
-    private final static int quality = 50;
+    private final static int IMAGE_MAX_WIDTH = 1600;
+    private final static int quality = 75;
 
     // http://stackoverflow.com/a/3549021
     private Bitmap compressFile(String imagePath){
@@ -33,9 +34,13 @@ public class UploadImageTask extends AsyncTask<String, Void, String> {
         BitmapFactory.decodeFile(imagePath, o);
 
         int scale = 1;
-        if (o.outHeight > IMAGE_MAX_HEIGHT) {
+        if (o.outHeight > o.outWidth  && o.outHeight > IMAGE_MAX_HEIGHT) {
             scale = (int)Math.pow(2, (int) Math.ceil(Math.log(IMAGE_MAX_HEIGHT /
                     (double)o.outHeight) / Math.log(0.5)));
+        }
+        else if (o.outWidth > IMAGE_MAX_WIDTH) {
+            scale = (int)Math.pow(2, (int) Math.ceil(Math.log(IMAGE_MAX_WIDTH /
+                    (double)o.outWidth) / Math.log(0.5)));
         }
 
         //Decode with inSampleSize

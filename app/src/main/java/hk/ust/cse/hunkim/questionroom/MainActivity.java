@@ -4,6 +4,8 @@ import android.app.ListActivity;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.DataSetObserver;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -20,10 +22,21 @@ import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
 import com.firebase.client.ValueEventListener;
+import com.squareup.okhttp.MediaType;
+import com.squareup.okhttp.RequestBody;
+
+import java.io.ByteArrayOutputStream;
 
 import hk.ust.cse.hunkim.questionroom.db.DBHelper;
 import hk.ust.cse.hunkim.questionroom.db.DBUtil;
 import hk.ust.cse.hunkim.questionroom.question.Question;
+import hk.ust.cse.hunkim.questionroom.services.ImageResponse;
+import hk.ust.cse.hunkim.questionroom.services.UploadPhotoService;
+import retrofit.Call;
+import retrofit.Callback;
+import retrofit.GsonConverterFactory;
+import retrofit.Response;
+import retrofit.Retrofit;
 
 public class MainActivity extends ListActivity {
 
@@ -86,7 +99,7 @@ public class MainActivity extends ListActivity {
         findViewById(R.id.uploadImage).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                uploadImage();
+                selectImage();
             }
         });
 
@@ -157,15 +170,70 @@ public class MainActivity extends ListActivity {
     }
 
     private static int RESULT_LOAD_IMG = 1;
-    private String fileName;
-    private String picturePath;
-    private void uploadImage() {
+    private void selectImage() {
         // Create intent to Open Image applications like Gallery, Google Photos
         Intent galleryIntent = new Intent(Intent.ACTION_PICK,
                 android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         // Start the Intent
 
         startActivityForResult(galleryIntent, RESULT_LOAD_IMG);
+    }
+
+    private final static int IMAGE_MAX_HEIGHT = 1200;
+    private final static int IMAGE_MAX_WIDTH = 1600;
+    private final static int IMAGE_QUALITY = 75;
+    // http://stackoverflow.com/a/3549021
+    private byte[] compressFile(String imagePath){
+        //Decode image size
+        BitmapFactory.Options o = new BitmapFactory.Options();
+        o.inJustDecodeBounds = true;
+        BitmapFactory.decodeFile(imagePath, o);
+
+        int scale = 1;
+        if (o.outHeight > o.outWidth  && o.outHeight > IMAGE_MAX_HEIGHT) {
+            scale = (int)Math.pow(2, (int) Math.ceil(Math.log(IMAGE_MAX_HEIGHT /
+                    (double)o.outHeight) / Math.log(0.5)));
+        }
+        else if (o.outWidth > IMAGE_MAX_WIDTH) {
+            scale = (int)Math.pow(2, (int) Math.ceil(Math.log(IMAGE_MAX_WIDTH /
+                    (double)o.outWidth) / Math.log(0.5)));
+        }
+
+        //Decode with inSampleSize
+        BitmapFactory.Options o2 = new BitmapFactory.Options();
+        o2.inSampleSize = scale;
+        Bitmap myImg =  BitmapFactory.decodeFile(imagePath, o2);
+
+        // Compress the Image to jpeg to reduce image size to make upload easy
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        myImg.compress(Bitmap.CompressFormat.JPEG, IMAGE_QUALITY, stream);
+        return stream.toByteArray();
+    }
+
+    private void uploadPhoto(String picturePath) {
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(UploadPhotoService.BASE_URL)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+        UploadPhotoService service = retrofit.create(UploadPhotoService.class);
+        Call<ImageResponse> responseURL = service.uploadPhoto(RequestBody.create(MediaType.parse("text/plain"), compressFile(picturePath)));
+        responseURL.enqueue(
+                new Callback<ImageResponse>() {
+                    @Override
+                    public void onResponse(Response<ImageResponse> response, Retrofit retrofit) {
+                        try {
+                            Log.d("Upload", response.body().Filepath);
+                        } catch (Exception e) {
+                            Log.e("ERROR:", "Error at ", e);
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Throwable t) {
+                        Log.e("Upload", "error", t);
+                    }
+                }
+        );
     }
 
     @Override
@@ -177,14 +245,8 @@ public class MainActivity extends ListActivity {
             Cursor cursor = getContentResolver().query(selectedImage, filePathColumn, null, null, null);
             cursor.moveToFirst();
             int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-            picturePath = cursor.getString(columnIndex);
+            String picturePath = cursor.getString(columnIndex);
             cursor.close();
-
-            String fileNameSegments[] = picturePath.split("/");
-            fileName = fileNameSegments[fileNameSegments.length - 1];
-
-            // TODO: Remove after backend integration...
-            new UploadImageTask().execute(picturePath, fileName);
         }
     }
 

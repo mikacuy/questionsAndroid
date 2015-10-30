@@ -4,7 +4,6 @@ import android.app.ListActivity;
 import android.content.Intent;
 import android.database.DataSetObserver;
 import android.os.Bundle;
-import android.provider.ContactsContract;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -12,18 +11,13 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import hk.ust.cse.hunkim.questionroom.db.DBHelper;
 import hk.ust.cse.hunkim.questionroom.db.DBUtil;
-import hk.ust.cse.hunkim.questionroom.db.Database;
 import hk.ust.cse.hunkim.questionroom.question.Question;
 
 public class MainActivity extends ListActivity {
     private String roomName;
-    private Database mDatabaseRef;
-    //private Firebase mFirebaseRef;
-    //private ValueEventListener mConnectedListener;
     private QuestionListAdapter mChatListAdapter;
 
     private DBUtil dbutil;
@@ -51,10 +45,6 @@ public class MainActivity extends ListActivity {
         }
 
         setTitle("Room name: " + roomName);
-
-        // Setup our Firebase mFirebaseRef
-        //mFirebaseRef = new Firebase(FIREBASE_URL).child(roomName).child("questions");
-
         // Setup our input methods. Enter key on the keyboard or pushing the send button
         EditText inputText = (EditText) findViewById(R.id.messageInput);
         inputText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -86,14 +76,10 @@ public class MainActivity extends ListActivity {
         // Setup our view and list adapter. Ensure it scrolls to the bottom as data changes
         final ListView listView = getListView();
         // Tell our list adapter that we only want 200 messages at a time
-        /*
-        mChatListAdapter = new QuestionListAdapter(
-                mFirebaseRef.orderByChild("echo").limitToFirst(200),
-                this, R.layout.question, roomName);
-        */
+
+        mChatListAdapter = new QuestionListAdapter(this, R.layout.question);
         listView.setAdapter(mChatListAdapter);
 
-        /*
         mChatListAdapter.registerDataSetObserver(new DataSetObserver() {
             @Override
             public void onChanged() {
@@ -101,8 +87,10 @@ public class MainActivity extends ListActivity {
                 listView.setSelection(mChatListAdapter.getCount() - 1);
             }
         });
-        */
 
+        mChatListAdapter.pull(roomName);
+
+        // TODO: Reimplement
         // Finally, a little indication of connection status
         /*
         mConnectedListener = mFirebaseRef.getRoot().child(".info/connected").addValueEventListener(new ValueEventListener() {
@@ -127,7 +115,6 @@ public class MainActivity extends ListActivity {
     @Override
     public void onStop() {
         super.onStop();
-        //mFirebaseRef.getRoot().child(".info/connected").removeEventListener(mConnectedListener);
         mChatListAdapter.cleanup();
     }
 
@@ -135,10 +122,10 @@ public class MainActivity extends ListActivity {
         EditText inputText = (EditText) findViewById(R.id.messageInput);
         String input = inputText.getText().toString();
         if (!input.equals("")) {
-            // Create our 'model', a Chat object
-            Question question = new Question(input);
-            // Create a new, auto-generated child of that chat location, and save our chat data there
-            mDatabaseRef.push(question);
+            Question question = new Question(roomName, input);
+            mChatListAdapter.push(question);
+
+            // Clear inputText.
             inputText.setText("");
         }
     }

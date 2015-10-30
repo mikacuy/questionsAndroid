@@ -1,19 +1,25 @@
 package hk.ust.cse.hunkim.questionroom.question;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.Date;
 
 /**
  * Created by Joel on 29/10/2015.
  */
 public abstract class BaseQuestion implements Comparable<BaseQuestion> {
-    private String id;
-    private int userId;
-    private String username;
-    private String text;
-    private long time;
-    private String imageURL;
-    private int likes;
-    private boolean newQuestion;
+    @JsonProperty("__v") private String __v;
+    @JsonProperty("_id") protected String id;
+    @JsonProperty("text") protected String text;
+    @JsonProperty("imageURL") protected String imageURL;
+    // TODO: Fix time handling; server side's fault probably.
+    @JsonProperty("time") private String time;
+    protected long unixTime;
+    protected int likes;
+    protected boolean newQuestion;
+
+    // Dummy Constructor for JSONObject-ifying
+    public BaseQuestion() {}
 
     /**
      * Set question from a String message
@@ -22,7 +28,8 @@ public abstract class BaseQuestion implements Comparable<BaseQuestion> {
     public BaseQuestion(String message) {
         this.text = message;
         this.likes = 0;
-        this.time = new Date().getTime();
+        //this.unixTime = new Date().getTime();
+        this.imageURL = "";
     }
 
     public String getId() {
@@ -33,20 +40,12 @@ public abstract class BaseQuestion implements Comparable<BaseQuestion> {
         this.id = id;
     }
 
-    public int getUserId() {
-        return userId;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
     public String getText() {
         return text;
     }
 
-    public long getTime() {
-        return time;
+    public long getUnixTime() {
+        return unixTime;
     }
 
     public String getImageURL() {
@@ -58,7 +57,7 @@ public abstract class BaseQuestion implements Comparable<BaseQuestion> {
     }
 
     public void updateNewQuestion() {
-        newQuestion = this.time > new Date().getTime() - 180000;
+        newQuestion = this.unixTime > new Date().getTime() - 180000;
     }
 
     public boolean isNewQuestion() {
@@ -82,10 +81,10 @@ public abstract class BaseQuestion implements Comparable<BaseQuestion> {
 
 
         if (this.likes == other.likes) {
-            if (other.time == this.time) {
+            if (other.unixTime == this.unixTime) {
                 return 0;
             }
-            return other.time > this.time ? -1 : 1;
+            return other.unixTime > this.unixTime ? -1 : 1;
         }
         return this.likes - other.likes;
     }
@@ -96,5 +95,9 @@ public abstract class BaseQuestion implements Comparable<BaseQuestion> {
             return false;
         }
         return getId() == ((BaseQuestion) o).getId();
+    }
+
+    public void setImageURL(String imageURL) {
+        this.imageURL = imageURL;
     }
 }

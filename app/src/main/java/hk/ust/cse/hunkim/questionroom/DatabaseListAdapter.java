@@ -140,6 +140,15 @@ public abstract class DatabaseListAdapter extends BaseAdapter {
     }
 
     @Override
+    public int getViewTypeCount() {
+
+        if (getCount() != 0)
+            return getCount();
+
+        return 1;
+    }
+
+    @Override
     public View getView(int i, View view, ViewGroup viewGroup) {
         if (view == null) {
             view = mInflater.inflate(mLayout, viewGroup, false);

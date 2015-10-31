@@ -20,7 +20,7 @@ public class ImageHelper {
     private final static int IMAGE_MAX_HEIGHT = 1200;
     private final static int IMAGE_MAX_WIDTH = 1600;
     private final static int IMAGE_QUALITY = 75;
-    public static String picturePath;
+    public static String picturePath = "";
 
     public static byte[] compressFile(String imagePath){
         // http://stackoverflow.com/a/3549021

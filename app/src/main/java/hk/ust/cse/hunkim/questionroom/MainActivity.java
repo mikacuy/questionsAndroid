@@ -43,7 +43,7 @@ public class MainActivity extends ListActivity {
         assert (intent != null);
 
         // Make it a bit more reliable
-        roomName = intent.getStringExtra(JoinActivity.ROOM_NAME);
+        roomName = intent.getStringExtra(JoinActivity.ROOM_NAME).toLowerCase();
         if (roomName == null || roomName.length() == 0) {
             roomName = "all";
         }
@@ -135,16 +135,21 @@ public class MainActivity extends ListActivity {
 
         EditText inputText = (EditText) findViewById(R.id.messageInput);
         String input = inputText.getText().toString();
+        Question question;
         if (!input.equals("")) {
-            Question question = new Question(roomName, input);
-            mChatListAdapter.push(question);
+            question = new Question(roomName, input);
 
             // Clear inputText.
             inputText.setText("");
+
+            if (!ImageHelper.picturePath.equals("")) {
+                mChatListAdapter.uploadPhoto(ImageHelper.picturePath, question);
+            } else {
+                mChatListAdapter.push(question);
+            }
         }
     }
 
-    private static int RESULT_LOAD_IMG = 1;
     private void selectImage() {
         // Create intent to Open Image applications like Gallery, Google Photos
         Intent galleryIntent = new Intent(Intent.ACTION_PICK,

@@ -67,18 +67,16 @@ public abstract class DatabaseListAdapter extends BaseAdapter {
         QuestionService service = retrofit.create(QuestionService.class);
         Call<List<Question>> response;
 
-        // TODO: Wait until backend fixes /question/room/[roomID]
-        //if (roomName == "")
+        if (roomName == "")
             response = service.getQuestions();
-        //else
-        //    response = service.getQuestions(roomName);
+        else
+            response = service.getQuestions(roomName);
 
         response.enqueue(new Callback<List<Question>>() {
             @Override
             public void onResponse(Response<List<Question>> response, Retrofit retrofit) {
                 for (Question q: response.body()) {
-                    if (q != null && q.getId() != null && q.getRoom().equals(roomName))
-                        mQuestionList.add(q);
+                    mQuestionList.add(q);
                 }
 
                 notifyDataSetChanged();

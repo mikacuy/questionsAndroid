@@ -27,4 +27,11 @@ public class Question extends BaseQuestion {
         return answers;
     }
 
+    public void setRoom(String room) {
+        this.room = room;
+    }
+
+    public void setAnswers(Answer[] answers) {
+        this.answers = answers;
+    }
 }

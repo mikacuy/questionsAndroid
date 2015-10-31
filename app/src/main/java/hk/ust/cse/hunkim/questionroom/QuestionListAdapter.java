@@ -4,14 +4,20 @@ import android.app.Activity;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.text.Html;
+import android.util.Log;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ListAdapter;
+import android.widget.ListView;
 import android.widget.TextView;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import hk.ust.cse.hunkim.questionroom.db.DBUtil;
+import hk.ust.cse.hunkim.questionroom.question.BaseQuestion;
 import hk.ust.cse.hunkim.questionroom.question.Question;
 
 /**
@@ -20,7 +26,6 @@ import hk.ust.cse.hunkim.questionroom.question.Question;
 public class QuestionListAdapter extends DatabaseListAdapter {
 // The mUsername for this client. We use this to indicate which messages originated from this user
     MainActivity activity;
-
 
     public QuestionListAdapter(Activity activity, int mLayout) {
         super(mLayout, activity);
@@ -62,7 +67,27 @@ public class QuestionListAdapter extends DatabaseListAdapter {
             msgString += "<font color=red>NEW </font>";
         }
         msgString += question.getText();
-        ((TextView) view.findViewById(R.id.head_desc)).setText(Html.fromHtml(msgString));
+        ((TextView) view.findViewById(R.id.head_desc)).setText(Html.fromHtml(msgString + " (" + question.getAnswers().length + ")"));
+
+        final ListView answerList = ((ListView) view.findViewById(R.id.answerlist));
+
+        ArrayList<String> answers = new ArrayList<String>();
+        for (BaseQuestion answer: question.getAnswers()) {
+            answers.add(answer.getText());
+        }
+
+        answerList.setAdapter(new ArrayAdapter<String>(view.getContext(), android.R.layout.simple_list_item_1, answers));
+        answerList.setVisibility(View.GONE);
+
+        view.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (answerList.getVisibility() == View.GONE)
+                    answerList.setVisibility(View.VISIBLE);
+                else if (answerList.getVisibility() == View.VISIBLE)
+                    answerList.setVisibility(View.GONE);
+            }
+        });
 
 
         // http://stackoverflow.com/questions/8743120/how-to-grey-out-a-button

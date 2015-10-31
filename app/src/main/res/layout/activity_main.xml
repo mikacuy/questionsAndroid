@@ -24,7 +24,6 @@
         android:layout_above="@+id/listFooter"
         android:transcriptMode="alwaysScroll" />
 
-
     <LinearLayout
         android:id="@+id/listFooter"
         android:layout_width="fill_parent"

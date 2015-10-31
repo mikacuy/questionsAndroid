@@ -100,4 +100,8 @@ public abstract class BaseQuestion implements Comparable<BaseQuestion> {
     public void setImageURL(String imageURL) {
         this.imageURL = imageURL;
     }
+
+    public void setText(String text) {
+        this.text = text;
+    }
 }

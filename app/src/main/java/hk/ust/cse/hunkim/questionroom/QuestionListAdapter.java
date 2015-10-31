@@ -6,12 +6,17 @@ import android.graphics.PorterDuff;
 import android.text.Html;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.squareup.picasso.Callback;
+import com.squareup.picasso.Picasso;
 
 import java.util.Collections;
 import java.util.List;
 
 import hk.ust.cse.hunkim.questionroom.db.DBUtil;
+import hk.ust.cse.hunkim.questionroom.db.ImageHelper;
 import hk.ust.cse.hunkim.questionroom.question.Question;
 
 /**
@@ -71,6 +76,17 @@ public class QuestionListAdapter extends DatabaseListAdapter {
             likeButton.getBackground().setColorFilter(null);
         } else {
             likeButton.getBackground().setColorFilter(Color.RED, PorterDuff.Mode.MULTIPLY);
+        }
+
+        if (!question.getImageURL().equals("")) {
+            ImageView iv = (ImageView) view.findViewById(R.id.imageView);
+            if (iv.getTag() == null) {
+                iv.setImageBitmap(null);
+                Picasso.with(view.getContext())
+                        .load(question.getImageURL())
+                        .into(iv);
+                iv.setTag(question.getId());
+            }
         }
 
         view.setTag(question.getId());  // store key in the view

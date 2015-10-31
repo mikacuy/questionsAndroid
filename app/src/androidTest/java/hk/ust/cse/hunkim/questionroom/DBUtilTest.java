@@ -9,7 +9,7 @@ import hk.ust.cse.hunkim.questionroom.db.DBUtil;
  * Created by hunkim on 7/15/15.
  */
 public class DBUtilTest extends AndroidTestCase {
-
+    /*
     DBUtil dbutil;
 
     public DBUtilTest() {
@@ -34,4 +34,5 @@ public class DBUtilTest extends AndroidTestCase {
 
         assertFalse("Key is deleted!", dbutil.contains(key));
     }
+    */
 }

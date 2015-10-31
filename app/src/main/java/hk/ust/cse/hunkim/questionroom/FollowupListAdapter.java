@@ -32,14 +32,6 @@ public class FollowupListAdapter extends ArrayAdapter<FollowUp> {
         TextView textView = (TextView) rowView.findViewById(R.id.head_desc_followup);
 
         textView.setText(values[position].getText());
-        // Change the icon for Windows and iPhone
-        textView.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                // Todo
-            }
-        });
-
-
         return rowView;
     }
 }

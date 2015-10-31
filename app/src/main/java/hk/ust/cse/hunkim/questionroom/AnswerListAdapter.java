@@ -11,7 +11,7 @@ import android.widget.TextView;
 import hk.ust.cse.hunkim.questionroom.question.Answer;
 
 /**
- * Created by J.T and Long on 10/31/2015.
+ * Created by JT and Long on 10/31/2015.
  */
 public class AnswerListAdapter extends ArrayAdapter<Answer> {
     private final Context context;

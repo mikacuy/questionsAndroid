@@ -4,20 +4,15 @@ import android.app.Activity;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.text.Html;
-import android.util.Log;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import hk.ust.cse.hunkim.questionroom.db.DBUtil;
-import hk.ust.cse.hunkim.questionroom.question.BaseQuestion;
 import hk.ust.cse.hunkim.questionroom.question.Question;
 
 /**
@@ -71,24 +66,7 @@ public class QuestionListAdapter extends DatabaseListAdapter {
 
         final ListView answerList = ((ListView) view.findViewById(R.id.answerlist));
 
-        ArrayList<String> answers = new ArrayList<String>();
-        for (BaseQuestion answer: question.getAnswers()) {
-            answers.add(answer.getText());
-        }
-
-        answerList.setAdapter(new ArrayAdapter<String>(view.getContext(), android.R.layout.simple_list_item_1, answers));
-        answerList.setVisibility(View.GONE);
-
-        view.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (answerList.getVisibility() == View.GONE)
-                    answerList.setVisibility(View.VISIBLE);
-                else if (answerList.getVisibility() == View.VISIBLE)
-                    answerList.setVisibility(View.GONE);
-            }
-        });
-
+        answerList.setAdapter(new AnswerListAdapter(view.getContext(), R.id.answerlist,question.getAnswers()));
 
         // http://stackoverflow.com/questions/8743120/how-to-grey-out-a-button
         // grey out our button

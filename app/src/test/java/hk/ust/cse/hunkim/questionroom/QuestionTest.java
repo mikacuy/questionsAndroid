@@ -15,7 +15,7 @@ public class QuestionTest  extends TestCase {
     Question q;
 
 
-
+    /*
     protected void setUp() throws Exception {
         super.setUp();
 
@@ -42,5 +42,5 @@ public class QuestionTest  extends TestCase {
     public void testHead() {
         assertEquals("Head", "Hello?", q.getHead());
     }
-
+    */
 }

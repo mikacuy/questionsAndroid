@@ -16,12 +16,7 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.firebase.client.DataSnapshot;
-import com.firebase.client.Firebase;
-import com.firebase.client.FirebaseError;
-import com.firebase.client.ValueEventListener;
 import com.squareup.okhttp.MediaType;
 import com.squareup.okhttp.RequestBody;
 
@@ -39,13 +34,7 @@ import retrofit.Response;
 import retrofit.Retrofit;
 
 public class MainActivity extends ListActivity {
-
-    // TODO: change this to your own Firebase URL
-    private static final String FIREBASE_URL = "https://radiant-fire-2727.firebaseio.com/";
-
     private String roomName;
-    private Firebase mFirebaseRef;
-    private ValueEventListener mConnectedListener;
     private QuestionListAdapter mChatListAdapter;
 
     private DBUtil dbutil;
@@ -59,7 +48,7 @@ public class MainActivity extends ListActivity {
         super.onCreate(savedInstanceState);
 
         //initialized once with an Android context.
-        Firebase.setAndroidContext(this);
+        //Firebase.setAndroidContext(this);
 
         setContentView(R.layout.activity_main);
 
@@ -73,10 +62,6 @@ public class MainActivity extends ListActivity {
         }
 
         setTitle("Room name: " + roomName);
-
-        // Setup our Firebase mFirebaseRef
-        mFirebaseRef = new Firebase(FIREBASE_URL).child(roomName).child("questions");
-
         // Setup our input methods. Enter key on the keyboard or pushing the send button
         EditText inputText = (EditText) findViewById(R.id.messageInput);
         inputText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -115,9 +100,8 @@ public class MainActivity extends ListActivity {
         // Setup our view and list adapter. Ensure it scrolls to the bottom as data changes
         final ListView listView = getListView();
         // Tell our list adapter that we only want 200 messages at a time
-        mChatListAdapter = new QuestionListAdapter(
-                mFirebaseRef.orderByChild("echo").limitToFirst(200),
-                this, R.layout.question, roomName);
+
+        mChatListAdapter = new QuestionListAdapter(this, R.layout.question);
         listView.setAdapter(mChatListAdapter);
 
         mChatListAdapter.registerDataSetObserver(new DataSetObserver() {
@@ -128,7 +112,11 @@ public class MainActivity extends ListActivity {
             }
         });
 
+        mChatListAdapter.pull(roomName);
+
+        // TODO: Reimplement
         // Finally, a little indication of connection status
+        /*
         mConnectedListener = mFirebaseRef.getRoot().child(".info/connected").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -145,12 +133,12 @@ public class MainActivity extends ListActivity {
                 // No-op
             }
         });
+        */
     }
 
     @Override
     public void onStop() {
         super.onStop();
-        mFirebaseRef.getRoot().child(".info/connected").removeEventListener(mConnectedListener);
         mChatListAdapter.cleanup();
     }
 
@@ -161,10 +149,10 @@ public class MainActivity extends ListActivity {
         EditText inputText = (EditText) findViewById(R.id.messageInput);
         String input = inputText.getText().toString();
         if (!input.equals("")) {
-            // Create our 'model', a Chat object
-            Question question = new Question(input);
-            // Create a new, auto-generated child of that chat location, and save our chat data there
-            mFirebaseRef.push().setValue(question);
+            Question question = new Question(roomName, input);
+            mChatListAdapter.push(question);
+
+            // Clear inputText.
             inputText.setText("");
         }
     }
@@ -250,13 +238,14 @@ public class MainActivity extends ListActivity {
         }
     }
 
-    public void updateEcho(String key) {
-        if (dbutil.contains(key)) {
+    public void updateLikes(String id) {
+        if (dbutil.contains(id)) {
             Log.e("Dupkey", "Key is already in the DB!");
             return;
         }
 
-        final Firebase echoRef = mFirebaseRef.child(key).child("echo");
+        /* TODO: Update Likes
+        final Firebase echoRef = mFirebaseRef.child(id).child("echo");
         echoRef.addListenerForSingleValueEvent(
                 new ValueEventListener() {
                     @Override
@@ -273,27 +262,11 @@ public class MainActivity extends ListActivity {
                     }
                 }
         );
+        */
 
-        final Firebase orderRef = mFirebaseRef.child(key).child("order");
-        orderRef.addListenerForSingleValueEvent(
-                new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        Long orderValue = (Long) dataSnapshot.getValue();
-                        Log.e("Order update:", "" + orderValue);
-
-                        orderRef.setValue(orderValue - 1);
-                    }
-
-                    @Override
-                    public void onCancelled(FirebaseError firebaseError) {
-
-                    }
-                }
-        );
 
         // Update SQLite DB
-        dbutil.put(key);
+        dbutil.put(id);
     }
 
     public void Close(View view) {

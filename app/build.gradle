@@ -42,8 +42,9 @@ dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'com.android.support:appcompat-v7:22.2.0'
 
-    // Firebase
-    compile 'com.firebase:firebase-client-android:2.3.1+'
+    // Retrofit & OkHttp & Jackson
+    compile 'com.squareup.retrofit:retrofit:2.0.0-beta2'
+    compile 'com.squareup.retrofit:converter-jackson:2.0.0-beta2'
 
     // Retrofit & OkHttp & GSON
     compile 'com.squareup.retrofit:retrofit:2.0.0-beta2'
